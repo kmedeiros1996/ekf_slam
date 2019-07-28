@@ -1,2 +1,2 @@
 # ekf_slam
-# ekf_slam
+Implemented as a learning experience to understand and work through state estimation and SLAM through EKF. Based off of other C++ kalman filter libraries such as [hmartiro's](https://github.com/hmartiro/kalman-cpp) and [PrieureDeSion's](https://github.com/PrieureDeSion/kalmanfilter-cpp) implementations, along with the content from [this video series](https://www.youtube.com/watch?v=U6vr3iNrwRA&list=PLgnQpQtFTOGQrZ4O5QzbIHgl3b1JHimN_). 
