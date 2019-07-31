@@ -1,6 +1,6 @@
 #include <eigen3/Eigen/Dense>
 #include <ekf_slam/kalmanfilter.h>
-
+#include <iostream>
 
 KalmanFilter::KalmanFilter(
   const Eigen::MatrixXd &inA,
@@ -15,13 +15,18 @@ KalmanFilter::KalmanFilter(
     output_C(inC),
     proc_noise_cov_Q(inQ),
     meas_noise_cov_R(inR),
-    m(output_C.rows()),
-    n(sys_dyn_A.cols()),
-    c(input_B.cols()),
-    is_init(false),
-    identity(n, n),
-    est_state_xhat(n)
+    init_error_cov_P0(inP)
+
     {
+
+      num_states = output_C.rows();
+      num_meas = sys_dyn_A.cols();
+      num_controls = input_B.cols();
+      is_init = false;
+      std::cout<<num_meas<<", "<<num_meas<<std::endl;
+      identity.resize(num_meas, num_meas);
+      std::cout<<num_meas<<std::endl;
+      est_state_xhat.resize(num_meas);
       identity.setIdentity();
     }
 
@@ -69,7 +74,7 @@ KalmanFilter::KalmanFilter(
     output_C = new_output_C;
   }
 
-  Eigen::MatrixXd KalmanFilter::get_state()
+  Eigen::VectorXd KalmanFilter::get_state()
   {
     return est_state_xhat;
   }

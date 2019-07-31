@@ -7,7 +7,7 @@ class KalmanFilter
 
 private:
 
-int m, n, c;
+int num_states, num_meas, num_controls;
 Eigen::MatrixXd sys_dyn_A,
                 input_B,
                 output_C,
