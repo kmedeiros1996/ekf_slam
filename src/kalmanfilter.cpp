@@ -23,9 +23,7 @@ KalmanFilter::KalmanFilter(
       num_meas = sys_dyn_A.cols();
       num_controls = input_B.cols();
       is_init = false;
-      std::cout<<num_meas<<", "<<num_meas<<std::endl;
       identity.resize(num_meas, num_meas);
-      std::cout<<num_meas<<std::endl;
       est_state_xhat.resize(num_meas);
       identity.setIdentity();
     }
