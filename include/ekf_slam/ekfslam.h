@@ -2,18 +2,18 @@
 #define EKFSLAM_H
 #include <eigen3/Eigen/Dense>
 #include <vector>
-
+#include <unordered_map>
 
 /*This EKF Slam implementation assumes the following:
   -movement on a 2D plane (x, y, theta)
   -velocity based motion model given u = [linear_velocity, angular_velocity]
-  -range bearing observation model given z = [distance_to_landmark_r, bearing_to_landmark_phi]
+  -range bearing observation model given z = [landmark_id, distance_to_landmark_r, bearing_to_landmark_phi]
 */
 
 
 class EKFSlam
 {
-  
+
 private:
 
   int num_landmarks;
@@ -26,19 +26,13 @@ private:
 
   long double timestamp;
 
-
-  std::vector<bool> observed_landmarks;
+  std::unordered_map<int, Eigen::Vector2d> observed_landmarks;
 
   Eigen::VectorXd velocity_motion_model_g(Eigen::Vector2d &command, double delta_t);
   Eigen::MatrixXd motion_model_jacobian_G(Eigen::Vector2d &command, double delta_t);
 
-
-  Eigen::VectorXd observation_model_h(Eigen::VectorXd &state);
-  Eigen::MatrixXd obs_model_jacobian_H(Eigen::VectorXd &state);
-
-
-
-
+  Eigen::Vector2d observation_model_h(Eigen::Vector2d landmark);
+  Eigen::MatrixXd obs_model_jacobian_H();
 
 public:
 
@@ -47,7 +41,7 @@ public:
 
 
   void predict_step(const Eigen::VectorXd &command_u, double delta_t);
-  void update_state(std::vector<Eigen::Vector2d> &meas_Y);
+  void update_state(std::vector<Eigen::Vector3d> &input_measurement);
 
   Eigen::VectorXd get_state();
   Eigen::MatrixXd get_state_covariance();
