@@ -6,7 +6,7 @@
 
 
 
-EKFSlam::EKFSlam(int num_landmarks, Eigen::VectorXd initial_state = Eigen::VectorXd::Zero(3, 1))
+EKFSlam::EKFSlam(const int num_landmarks, const Eigen::VectorXd initial_state)
 {
   int r_state_size = 3;
   float motion_noise = 0.001;
@@ -19,10 +19,10 @@ EKFSlam::EKFSlam(int num_landmarks, Eigen::VectorXd initial_state = Eigen::Vecto
   state(2) = initial_state(2);
 
 
-  full_state_cov = MatrixXd::Zero(2*num_landmarks+r_state_size, 2*num_landmarks+r_state_size);
-  robot_cov = MatrixXd::Zero(r_state_size, r_state_size);
-  robot_map_cov = MatrixXd::Zero(r_state_size, 2*num_landmarks);
-  map_cov = MatrixXd::Zero(2*num_landmarks, 2*num_landmarks);
+  full_state_cov = Eigen::MatrixXd::Zero(2*num_landmarks+r_state_size, 2*num_landmarks+r_state_size);
+  robot_cov = Eigen::MatrixXd::Zero(r_state_size, r_state_size);
+  robot_map_cov = Eigen::MatrixXd::Zero(r_state_size, 2*num_landmarks);
+  map_cov = Eigen::MatrixXd::Zero(2*num_landmarks, 2*num_landmarks);
 
 
   full_state_cov.topLeftCorner(r_state_size, r_state_size) = robot_cov;
@@ -30,7 +30,7 @@ EKFSlam::EKFSlam(int num_landmarks, Eigen::VectorXd initial_state = Eigen::Vecto
   full_state_cov.bottomLeftCorner(2*num_landmarks, r_state_size) = robot_map_cov.transpose();
   full_state_cov.bottomRightCorner(2*num_landmarks, 2*num_landmarks) = map_cov;
 
-  proc_noise_cov_Q = MatrixXd::Zero(2*num_landmarks + r_state_size, 2*num_landmarks + r_state_size);
+  proc_noise_cov_Q = Eigen::MatrixXd::Zero(2*num_landmarks + r_state_size, 2*num_landmarks + r_state_size);
 
   proc_noise_cov_Q.topLeftCorner(3, 3) <<
 
@@ -46,7 +46,7 @@ EKFSlam::EKFSlam(int num_landmarks, Eigen::VectorXd initial_state = Eigen::Vecto
 
 EKFSlam::~EKFSlam(){}
 
-Eigen::VectorXd EKFSlam::velocity_motion_model_g(Eigen::Vector2d &command, double delta_t)
+Eigen::VectorXd EKFSlam::velocity_motion_model_g(const Eigen::Vector2d &command, const double delta_t)
 {
   double lin_vel = command(0);
   double ang_vel = command(1);
@@ -65,9 +65,9 @@ Eigen::VectorXd EKFSlam::velocity_motion_model_g(Eigen::Vector2d &command, doubl
 
 }
 
-Eigen::MatrixXd EKFSlam::motion_model_jacobian_G(Eigen::Vector2d &command, double delta_t)
+Eigen::MatrixXd EKFSlam::motion_model_jacobian_G(const Eigen::Vector2d &command, const double delta_t)
 {
-  Eigen::MatrixXd jacobian_G = MatrixXd::Zero(3, 3);
+  Eigen::MatrixXd jacobian_G = Eigen::MatrixXd::Zero(3, 3);
   double lin_vel = command(0);
   double ang_vel = command(1);
   double lin_by_ang = lin_vel/ang_vel;
@@ -83,19 +83,19 @@ Eigen::MatrixXd EKFSlam::motion_model_jacobian_G(Eigen::Vector2d &command, doubl
   return jacobian_G;
 }
 
-Eigen::Vector2d EKFSlam::observation_model_h(Eigen::Vector2d landmark)
+Eigen::Vector2d EKFSlam::observation_model_h(const Eigen::Vector2d &landmark)
 {
   Eigen::Vector2d expected_Z_t;
   Eigen::Vector2d delta(landmark(0) - state(0), landmark(1) - state(1));
 
   double expected_range_q = delta.dot(delta);
-  double expected_bearing_q = atan2(delta(1), delta(0)) - state(2);
-  expected_Z_t << sqrt(expected_range), expected_bearing;
+  double expected_bearing = atan2(delta(1), delta(0)) - state(2);
+  expected_Z_t << sqrt(expected_range_q), expected_bearing;
 
   return expected_Z_t;
 }
 
-Eigen::MatrixXd obs_model_jacobian_H(Eigen::Vector2d landmark)
+Eigen::MatrixXd EKFSlam::obs_model_jacobian_H(const Eigen::Vector2d &landmark)
 {
   Eigen::MatrixXd jacobian_H = Eigen::MatrixXd::Zero(2, 5);
   Eigen::Vector2d delta(landmark(0) - state(0), landmark(1) - state(1));
@@ -114,7 +114,7 @@ Eigen::MatrixXd obs_model_jacobian_H(Eigen::Vector2d landmark)
 
 
 
-void EKFSlam::predict_step(const Eigen::VectorXd &command_u, double delta_t)
+void EKFSlam::predict_step(const Eigen::Vector2d &command_u, double delta_t)
 {
 
   Eigen::VectorXd pose_shift_g = velocity_motion_model_g(command_u, delta_t);
@@ -137,13 +137,13 @@ void EKFSlam::predict_step(const Eigen::VectorXd &command_u, double delta_t)
 
 void EKFSlam::update_state(std::vector<Eigen::Vector3d> &input_measurement)
 {
-  int meas_size = meas_y.size();
+  int meas_size = input_measurement.size();
 
-  Eigen::VectorXd expected_Z = VectorXd::Zero(2*meas_size);
-  Eigen::VectorXd measured_Z = VectorXd::Zero(2*meas_size);
+  Eigen::VectorXd expected_Z = Eigen::VectorXd::Zero(2*meas_size);
+  Eigen::VectorXd measured_Z = Eigen::VectorXd::Zero(2*meas_size);
 
   Eigen::MatrixXd jacobian_H = Eigen::MatrixXd::Zero(2*meas_size, 2*observed_landmarks.size() + 3);
-  for (int j = 0; i < meas_size(); j++)
+  for (int j = 0; j < meas_size; j++)
   {
     Eigen::Vector3d measurement = input_measurement.at(j);
 
@@ -178,17 +178,27 @@ void EKFSlam::update_state(std::vector<Eigen::Vector3d> &input_measurement)
       H_t(0, 0), H_t(0, 1), H_t(0, 2),
       H_t(1, 0), H_t(1, 1), H_t(1, 2);
 
-    jacobian_H.block<2,2> (2*i, 2*id+1) <<
+    jacobian_H.block<2,2> (2*j, 2*id+1) <<
       H_t(0, 3), H_t(0, 4),
       H_t(1, 3), H_t(1, 4);
 
   }
 
-  Eigen::MatrixXd meas_noise_cov_R = Eigen::MatrixXd::Identity(2*meas_size, 2*meas_size);
+  Eigen::MatrixXd meas_noise_cov_R = Eigen::MatrixXd::Identity(2*meas_size, 2*meas_size) * 0.001;
   kalman_gain_K = full_state_cov * jacobian_H.transpose() * (jacobian_H * full_state_cov * jacobian_H.transpose() + meas_noise_cov_R).inverse();
   Eigen::Vector2d meas_diff = measured_Z - expected_Z;
 
   state = state + kalman_gain_K * meas_diff;
   full_state_cov = full_state_cov - kalman_gain_K*jacobian_H*full_state_cov;
-  
+
+}
+
+Eigen::VectorXd EKFSlam::get_state()
+{
+  return state;
+}
+
+Eigen::MatrixXd EKFSlam::get_state_covariance()
+{
+  return full_state_cov;
 }

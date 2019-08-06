@@ -17,6 +17,7 @@ class EKFSlam
 private:
 
   int num_landmarks;
+  Eigen::MatrixXd kalman_gain_K;
   Eigen::MatrixXd proc_noise_cov_Q;
   Eigen::MatrixXd robot_cov;
   Eigen::MatrixXd robot_map_cov;
@@ -24,23 +25,24 @@ private:
   Eigen::MatrixXd full_state_cov;
   Eigen::VectorXd state;
 
+
   long double timestamp;
 
   std::unordered_map<int, Eigen::Vector2d> observed_landmarks;
 
-  Eigen::VectorXd velocity_motion_model_g(Eigen::Vector2d &command, double delta_t);
-  Eigen::MatrixXd motion_model_jacobian_G(Eigen::Vector2d &command, double delta_t);
+  Eigen::VectorXd velocity_motion_model_g(const Eigen::Vector2d &command, const double delta_t);
+  Eigen::MatrixXd motion_model_jacobian_G(const Eigen::Vector2d &command, const double delta_t);
 
-  Eigen::Vector2d observation_model_h(Eigen::Vector2d landmark);
-  Eigen::MatrixXd obs_model_jacobian_H();
+  Eigen::Vector2d observation_model_h(const Eigen::Vector2d &landmark);
+  Eigen::MatrixXd obs_model_jacobian_H(const Eigen::Vector2d &landmark);
 
 public:
 
-  EKFSlam(int num_landmarks, Eigen::VectorXd initial_state = Eigen::VectorXd::Zero(3, 1));
+  EKFSlam(const int num_landmarks, const Eigen::VectorXd initial_state = Eigen::VectorXd::Zero(3, 1));
   ~EKFSlam();
 
 
-  void predict_step(const Eigen::VectorXd &command_u, double delta_t);
+  void predict_step(const Eigen::Vector2d &command_u, const double delta_t);
   void update_state(std::vector<Eigen::Vector3d> &input_measurement);
 
   Eigen::VectorXd get_state();
