@@ -188,9 +188,25 @@ void EKFSlam::update_state(std::vector<Eigen::Vector3d> &input_measurement)
   kalman_gain_K = full_state_cov * jacobian_H.transpose() * (jacobian_H * full_state_cov * jacobian_H.transpose() + meas_noise_cov_R).inverse();
   Eigen::Vector2d meas_diff = measured_Z - expected_Z;
 
+  for (int i = 1; i < meas_diff.size(); i+=2)
+  {
+    while(meas_diff(i) > M_PI)
+      meas_diff(i) = meas_diff(i) - 2 * M_PI;
+
+
+    while(meas_diff(i) < -M_PI)
+      meas_diff(i) = meas_diff(i) + 2 * M_PI;
+
+  }
+
   state = state + kalman_gain_K * meas_diff;
   full_state_cov = full_state_cov - kalman_gain_K*jacobian_H*full_state_cov;
 
+  while(state(2) > M_PI)
+    state(2) = state(2) - 2*M_PI;
+
+  while(state(2) < -M_PI)
+    state(2) = state(2) + 2*M_PI;
 }
 
 Eigen::VectorXd EKFSlam::get_state()
