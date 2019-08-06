@@ -128,6 +128,9 @@ add_library(kalman
    src/kalmanfilter.cpp
  )
 
+add_library(ekfslam
+src/ekfslam.cpp)
+
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
 ## either from message generation or dynamic reconfigure
@@ -138,6 +141,7 @@ add_library(kalman
 ## The recommended prefix ensures that target names across packages don't collide
 
  add_executable(kf_test src/kf_test.cpp)
+ add_executable(system src/slam_system.cpp)
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
 ## target back to the shorter version for ease of user use
@@ -150,8 +154,9 @@ add_library(kalman
 
 ## Specify libraries to link a library or executable target against
  target_link_libraries(kalman ${catkin_LIBRARIES})
-
+ target_link_libraries(ekfslam ${catkin_LIBRARIES})
  target_link_libraries(kf_test ${catkin_LIBRARIES} kalman)
+ target_link_libraries(system ${catkin_LIBRARIES} ekfslam)
 #############
 ## Install ##
 #############
