@@ -15,7 +15,7 @@ find_package(catkin REQUIRED COMPONENTS
   std_msgs
 )
 find_package(Eigen3 REQUIRED)
-
+find_package(PythonLibs 2.7 REQUIRED)
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
 
@@ -122,6 +122,9 @@ include_directories(
 # include
   ${catkin_INCLUDE_DIRS}
 )
+
+include_directories(${PYTHON_INCLUDE_DIRS})
+
 include_directories(include)
 ## Declare a C++ library
 add_library(kalman
@@ -151,12 +154,13 @@ src/ekfslam.cpp)
 ## Add cmake target dependencies of the executable
 ## same as for the library above
 # add_dependencies(${PROJECT_NAME}_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-
+target_include_directories(ekfslam PRIVATE ${PYTHON_INCLUDE_DIRS})
 ## Specify libraries to link a library or executable target against
  target_link_libraries(kalman ${catkin_LIBRARIES})
  target_link_libraries(ekfslam ${catkin_LIBRARIES})
  target_link_libraries(kf_test ${catkin_LIBRARIES} kalman)
  target_link_libraries(system ${catkin_LIBRARIES} ekfslam)
+ target_link_libraries(system ${PYTHON_LIBRARIES})
 #############
 ## Install ##
 #############
