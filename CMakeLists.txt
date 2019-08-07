@@ -134,6 +134,8 @@ add_library(kalman
 add_library(ekfslam
 src/ekfslam.cpp)
 
+add_library (json src/jsoncpp.cpp)
+
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
 ## either from message generation or dynamic reconfigure
@@ -155,12 +157,14 @@ src/ekfslam.cpp)
 ## same as for the library above
 # add_dependencies(${PROJECT_NAME}_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 target_include_directories(ekfslam PRIVATE ${PYTHON_INCLUDE_DIRS})
+
 ## Specify libraries to link a library or executable target against
  target_link_libraries(kalman ${catkin_LIBRARIES})
  target_link_libraries(ekfslam ${catkin_LIBRARIES})
  target_link_libraries(kf_test ${catkin_LIBRARIES} kalman)
- target_link_libraries(system ${catkin_LIBRARIES} ekfslam)
+ target_link_libraries(system ${catkin_LIBRARIES} ekfslam json)
  target_link_libraries(system ${PYTHON_LIBRARIES})
+
 #############
 ## Install ##
 #############

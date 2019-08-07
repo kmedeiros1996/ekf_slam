@@ -3,9 +3,10 @@
 #include <fstream>
 #include <iostream>
 #include <unordered_map>
+#include <map>
 #include <eigen3/Eigen/Dense>
 #include <vector>
-
+#include <json/json.h>
 
 namespace slamIO
 {
@@ -58,6 +59,36 @@ namespace slamIO
     }
 
     return commands;
+  }
+
+  std::map<double, std::vector<Eigen::Vector3d>> get_measurements(std::string path)
+  {
+    std::map<double, std::vector<Eigen::Vector3d>> meas_data;
+    Json::Value root;
+
+    std::ifstream instream(path);
+
+    instream>>root;
+    double total_time = 0.0;
+    for(auto meas : root["measurements"])
+    {
+      double dt = meas["dt"].asDouble();
+      std::vector<Eigen::Vector3d> mlist;
+      std::cout<<dt<<": ";
+      for (auto lm : meas["landmarks"])
+      {
+        Eigen::Vector3d landvec;
+
+        landvec<<lm[0].asDouble(), lm[1].asDouble(), lm[2].asDouble();
+        std::cout<<landvec<<std::endl;
+        mlist.push_back(landvec);
+      }
+      total_time+=dt;
+
+      meas_data[total_time] = mlist;
+
+    }
+    return meas_data;
   }
 
 }
