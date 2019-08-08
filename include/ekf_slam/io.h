@@ -74,13 +74,13 @@ namespace slamIO
     {
       double dt = meas["dt"].asDouble();
       std::vector<Eigen::Vector3d> mlist;
-      std::cout<<dt<<": ";
+
       for (auto lm : meas["landmarks"])
       {
         Eigen::Vector3d landvec;
 
         landvec<<lm[0].asDouble(), lm[1].asDouble(), lm[2].asDouble();
-        std::cout<<landvec<<std::endl;
+
         mlist.push_back(landvec);
       }
       total_time+=dt;
