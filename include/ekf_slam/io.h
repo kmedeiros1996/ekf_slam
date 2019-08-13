@@ -8,68 +8,22 @@
 #include <vector>
 #include <json/json.h>
 
-namespace slamIO
+class SlamIO
 {
+private:
+  std::map<double, std::vector<Eigen::Vector3d>> meas_data;
+  std::vector<Eigen::Vector2d> commands;
+  std::unordered_map <int, Eigen::Vector2d> landmark_locations;
 
-  std::unordered_map<int, Eigen::Vector2d> load_landmarks(std::string path)
+
+public:
+  SlamIO(std::string path)
   {
-    std::unordered_map <int, Eigen::Vector2d> landmark_locations;
-    std::ifstream in_landmarks;
-    in_landmarks.open(path);
-    std::string landmark_line;
-
-    while(std::getline(in_landmarks, landmark_line))
-    {
-      std::istringstream iss(landmark_line);
-      int id;
-      double xpos, ypos;
-
-      if (!(iss >> id >> xpos >> ypos))
-      {
-        std::cout<<"Error with reading landmarks."<<std::endl<<landmark_line<<std::endl;
-        break;
-      }
-      Eigen::Vector2d landmark (xpos, ypos);
-
-      landmark_locations[id] = landmark;
-    }
-
-    return landmark_locations;
-  }
-
-
-  std::vector<Eigen::Vector2d> load_commands(std::string path)
-  {
-    std::vector<Eigen::Vector2d> commands;
-    std::ifstream in_commands;
-    in_commands.open(path);
-    std::string command_ln;
-
-    while(std::getline(in_commands, command_ln))
-    {
-      std::istringstream iss(command_ln);
-      double v, w;
-      if (!(iss >> v >> w))
-      {
-        std::cout<<"Error with reading command data."<<std::endl<<command_ln<<std::endl;
-        break;
-      }
-      Eigen::Vector2d command (v, w);
-      commands.push_back(command);
-    }
-
-    return commands;
-  }
-
-  std::map<double, std::vector<Eigen::Vector3d>> get_measurements(std::string path)
-  {
-    std::map<double, std::vector<Eigen::Vector3d>> meas_data;
     Json::Value root;
-
     std::ifstream instream(path);
-
     instream>>root;
     double total_time = 0.0;
+
     for(auto meas : root["measurements"])
     {
       double dt = meas["dt"].asDouble();
@@ -88,7 +42,43 @@ namespace slamIO
       meas_data[total_time] = mlist;
 
     }
+
+    for (auto comm : root["commands"])
+    {
+      Eigen::Vector2d command;
+
+      command<<comm[0].asDouble(), comm[1].asDouble();
+      commands.push_back(command);
+    }
+
+    for (auto true_lm : root["landmark_locations"])
+    {
+      int id = true_lm[0].asInt();
+      int xpos = true_lm[1].asDouble();
+      int ypos = true_lm[2].asDouble();
+
+      Eigen::Vector2d landmark;
+      landmark<<xpos , ypos;
+      landmark_locations[id] = landmark;
+    }
+
+    instream.close();
+
+  }
+
+
+
+  std::unordered_map<int, Eigen::Vector2d> get_landmark_locations()
+  {
+    return landmark_locations;
+  }
+  std::vector<Eigen::Vector2d> get_commands()
+  {
+    return commands;
+  }
+  std::map<double, std::vector<Eigen::Vector3d>> get_measurements()
+  {
     return meas_data;
   }
 
-}
+};
