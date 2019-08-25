@@ -1,16 +1,19 @@
 #include <eigen3/Eigen/Dense>
 #include <vector>
 #include <ekf_slam/ekfslam.h>
-#include <ekf_slam/matplotlibcpp.h>
 #include <ekf_slam/io.h>
 #include <math.h>
 #include <unordered_map>
 #include <map>
 #include <stdio.h>
+#include "ekf_slam/ros_vis.h"
 
-namespace plt = matplotlibcpp;
-int main()
+
+int main(int argc, char ** argv)
 {
+  ros::init(argc, argv, "SLAM_markers");
+
+
 
   SlamIO *io = new SlamIO("src/ekf_slam/resources/data.json");
 
@@ -31,8 +34,9 @@ int main()
     plot_y.push_back(lm[1]);
     lmit++;
   }
-  plt::plot(plot_x, plot_y, "bx");
+
   EKFSlam *system = new EKFSlam(landmark_locations.size());
+  ROSViz *viz = new ROSViz("landmark_locations");
 
   std::map<double, std::vector<Eigen::Vector3d>>::iterator it = measurements.begin();
 
@@ -59,12 +63,16 @@ int main()
     std::cout<<"Taking measurements and correcting state..."<<std::endl;
     system->update_state(it->second);
 
+
     std::cout<<"STATE: \n"<<system->get_state()<<std::endl<<"COV: \n"<<system->get_state_covariance()<<std::endl;
 
-    plt::show();
+    viz->publish_state(system->get_state(), system->get_state_covariance());
     it++;
+
   }
 
   delete system;
+  delete viz;
+
   return 0;
 }

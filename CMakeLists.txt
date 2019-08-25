@@ -126,15 +126,12 @@ include_directories(
 include_directories(${PYTHON_INCLUDE_DIRS})
 
 include_directories(include)
+
 ## Declare a C++ library
-add_library(kalman
-   src/kalmanfilter.cpp
- )
-
-add_library(ekfslam
-src/ekfslam.cpp)
-
+add_library(kalman src/kalmanfilter.cpp)
+add_library(ekfslam src/ekfslam.cpp)
 add_library (json src/jsoncpp.cpp)
+add_library (visualization src/ros_vis.cpp)
 
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
@@ -162,7 +159,7 @@ target_include_directories(ekfslam PRIVATE ${PYTHON_INCLUDE_DIRS})
  target_link_libraries(kalman ${catkin_LIBRARIES})
  target_link_libraries(ekfslam ${catkin_LIBRARIES})
  target_link_libraries(kf_test ${catkin_LIBRARIES} kalman)
- target_link_libraries(system ${catkin_LIBRARIES} ekfslam json)
+ target_link_libraries(system ${catkin_LIBRARIES} ekfslam json visualization)
  target_link_libraries(system ${PYTHON_LIBRARIES})
 
 #############
