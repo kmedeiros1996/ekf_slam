@@ -160,7 +160,7 @@ target_include_directories(ekfslam PRIVATE ${PYTHON_INCLUDE_DIRS})
  target_link_libraries(ekfslam ${catkin_LIBRARIES})
  target_link_libraries(kf_test ${catkin_LIBRARIES} kalman)
  target_link_libraries(system ${catkin_LIBRARIES} ekfslam json visualization)
- target_link_libraries(system ${PYTHON_LIBRARIES})
+
 
 #############
 ## Install ##
