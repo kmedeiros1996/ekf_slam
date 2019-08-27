@@ -26,17 +26,11 @@ int main(int argc, char ** argv)
 
   std::unordered_map<int, Eigen::Vector2d>::iterator lmit = landmark_locations.begin();
 
-  std::vector<double> plot_x, plot_y;
-  while (lmit != landmark_locations.end())
-  {
-    auto lm = lmit->second;
-    plot_x.push_back(lm[0]);
-    plot_y.push_back(lm[1]);
-    lmit++;
-  }
-
   EKFSlam *system = new EKFSlam(landmark_locations.size());
-  ROSViz *viz = new ROSViz("landmark_locations");
+  ROSViz *viz = new ROSViz("landmark_locations", "true_landmarks");
+
+
+  viz->publish_true_landmarks(landmark_locations);
 
   std::map<double, std::vector<Eigen::Vector3d>>::iterator it = measurements.begin();
 

@@ -1,3 +1,7 @@
+#ifndef IO_H
+#define IO_H
+
+
 #include <sstream>
 #include <string>
 #include <fstream>
@@ -21,6 +25,7 @@ public:
   {
     Json::Value root;
     std::ifstream instream(path);
+    std::cout<<"Loading json from path "<< path<<std::endl; 
     instream>>root;
     double total_time = 0.0;
 
@@ -82,3 +87,6 @@ public:
   }
 
 };
+
+
+#endif //IO_H
